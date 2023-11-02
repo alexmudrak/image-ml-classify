@@ -1,3 +1,3 @@
 # Run
 
-- Need to add base model into `models` folder
+- Need to add base model into `datamodels` folder

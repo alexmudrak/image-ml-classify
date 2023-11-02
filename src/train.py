@@ -11,7 +11,7 @@ train_dataset = ImageDataset(
 )
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
-model = DatasetUtils.load_existing_model("./models/base_model.pth")
+model = DatasetUtils.load_existing_model("./datamodels/base_model.pth")
 
 for param in model.parameters():
     param.requires_grad = False
@@ -47,4 +47,4 @@ for epoch in range(num_epochs):
         running_loss += loss.item()
         print(f"Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}")
 
-torch.save(model, "./models/base_model.pth")
+torch.save(model, "./datamodels/base_model.pth")

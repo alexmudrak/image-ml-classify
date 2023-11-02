@@ -15,7 +15,7 @@ api = Api(app)
 
 @app.route("/api/image", methods=["POST"])
 def upload():
-    model = DatasetUtils.load_existing_model("./models/base_model.pth")
+    model = DatasetUtils.load_existing_model("./datamodels/base_model.pth")
     model.eval()
 
     file = request.files["file"]
