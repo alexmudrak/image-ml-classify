@@ -1,4 +1,6 @@
 import json
+import os
+import shutil
 
 
 def get_from_json_file(path: str) -> dict:
@@ -32,3 +34,17 @@ def get_key_from_dict(dictionary: dict, value: str) -> str:
     new_key = str(last_key_number + 1)
 
     return new_key
+
+
+def remove_all_folders(base_dir: str) -> None:
+    if os.path.exists(base_dir):
+        for item in os.listdir(base_dir):
+            item_path = os.path.join(base_dir, item)
+            if os.path.isdir(item_path):
+                try:
+                    shutil.rmtree(item_path)
+                    print(f"Каталог {item_path} удален.")
+                except Exception as e:
+                    print(f"Не удалось удалить каталог {item_path}: {e}")
+    else:
+        print(f"Папка {base_dir} не существует.")

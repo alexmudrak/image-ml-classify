@@ -3,7 +3,7 @@ import os
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import transforms
+from torchvision import models, transforms
 
 from utils import get_from_json_file, get_key_from_dict, store_to_json_file
 
@@ -51,19 +51,38 @@ class ImageDataset(Dataset):
 
 
 class DatasetUtils:
-    @staticmethod
-    def get_transorm():
-        return transforms.Compose(
-            [
-                transforms.Resize(260),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-            ]
-        )
+    @classmethod
+    def _create_new_model(cls, model_path: str) -> models.ResNet:
+        model = models.resnet50(pretrained=False)
+        torch.save(model, model_path)
+        return model
 
     @staticmethod
-    def load_existing_model(model_path: str):
+    def get_transorms() -> dict[str, transforms.Compose]:
+        return {
+            "train": transforms.Compose(
+                [
+                    transforms.RandomResizedCrop(224),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor(),
+                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+                ]
+            ),
+            "val": transforms.Compose(
+                [
+                    transforms.Resize(256),
+                    transforms.CenterCrop(224),
+                    transforms.ToTensor(),
+                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+                ]
+            ),
+        }
+
+    @classmethod
+    def load_existing_model(cls, model_path: str) -> models.ResNet:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model = torch.load(model_path, map_location=device)
+        try:
+            model = torch.load(model_path, map_location=device)
+        except FileNotFoundError:
+            model = cls._create_new_model(model_path)
         return model
