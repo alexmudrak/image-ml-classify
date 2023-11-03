@@ -1,69 +1,37 @@
 import os
+import shutil
+from datetime import datetime
 
 import torch
-from PIL import Image
-from torch.utils.data import Dataset
-from torchvision import transforms
-
-from utils import get_from_json_file, get_key_from_dict, store_to_json_file
-
-
-class ImageDataset(Dataset):
-    def __init__(
-        self,
-        root_dir: str,
-        transform=None,
-        json_classes_path: str = "./datasets/classes.json",
-    ):
-        super().__init__()
-        self.root_dir = root_dir
-        self.transform = transform
-        self.image_paths = []
-        self.labels = []
-        self.class_register = get_from_json_file(json_classes_path)
-
-        for class_name in os.listdir(root_dir):
-            class_dir = os.path.join(root_dir, class_name)
-            if os.path.isdir(class_dir):
-                for image_name in os.listdir(class_dir):
-                    image_path = os.path.join(class_dir, image_name)
-                    class_id = get_key_from_dict(self.class_register, class_name)
-                    if class_id not in self.class_register.keys():
-                        self.class_register[class_id] = class_name
-                        store_to_json_file(json_classes_path, self.class_register)
-                    self.image_paths.append(image_path)
-                    self.labels.append(class_id)
-
-    def __len__(self):
-        return len(self.image_paths)
-
-    def __getitem__(self, idx):
-        img_path = self.image_paths[idx]
-        label = self.labels[idx]
-        image = Image.open(img_path)
-
-        if self.transform:
-            image = self.transform(image)
-
-        label = torch.tensor(int(label))
-
-        return image, label
+from torchvision import models
 
 
 class DatasetUtils:
-    @staticmethod
-    def get_transorm():
-        return transforms.Compose(
-            [
-                transforms.Resize(260),
-                transforms.CenterCrop(224),
-                transforms.ToTensor(),
-                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-            ]
+    def __init__(self, model_path: str):
+        self.model_path = model_path
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def load_model(self) -> models.ResNet:
+        try:
+            model = torch.load(self.model_path, map_location=self.device)
+        except FileNotFoundError:
+            model = models.resnet18(weights="IMAGENET1K_V1")
+            model.to(self.device)
+            torch.save(model, self.model_path)
+        return model
+
+    def backup_model(self):
+        now = datetime.now()
+        timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+        model_name = os.path.basename(self.model_path)
+        backup_path = (
+            f"./datamodels/{os.path.splitext(model_name)[0]}_backup_{timestamp}.pth"
         )
 
-    @staticmethod
-    def load_existing_model(model_path: str):
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model = torch.load(model_path, map_location=device)
-        return model
+        try:
+            shutil.copy(self.model_path, backup_path)
+            print(f"Model backed up to {backup_path}")
+        except FileNotFoundError:
+            print("Error: The source model file does not exist.")
+        except Exception as e:
+            print(f"An error occurred while creating a backup: {str(e)}")

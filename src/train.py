@@ -1,50 +1,66 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.optim import lr_scheduler
+from torchvision import datasets
 
-from core.datasets import DatasetUtils, ImageDataset
+from controllers.training import train_model
+from core.datasets import DatasetUtils
+from core.settings import DATAMODEL_PATH, DATASETS_FOLDER
+from core.transforms import get_transorms
+from utils import store_to_json_file
 
-# Замените на ваш загрузчик данных
-train_dataset = ImageDataset(
-    root_dir="./datasets/", transform=DatasetUtils.get_transorm()
+data_transforms = get_transorms()
+data_dir = DATASETS_FOLDER
+init_model = DatasetUtils(DATAMODEL_PATH)
+
+image_datasets = {
+    x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
+    for x in ["train", "val"]
+}
+dataloaders = {
+    x: torch.utils.data.DataLoader(
+        image_datasets[x], batch_size=4, shuffle=True, num_workers=4
+    )
+    for x in ["train", "val"]
+}
+dataset_sizes = {x: len(image_datasets[x]) for x in ["train", "val"]}
+class_names = image_datasets["train"].classes
+
+# Generate new classes
+json_classes = {index: value for index, value in enumerate(class_names)}
+store_to_json_file(
+    json_classes,
+    # TODO: create env variable
+    "./datasets/classes.json",
 )
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
-model = DatasetUtils.load_existing_model("./datamodels/base_model.pth")
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+model = init_model.load_model()
 for param in model.parameters():
     param.requires_grad = False
 
-# Определение функции потерь и оптимизатора
+num_ftrs = model.fc.in_features
+model.fc = nn.Linear(num_ftrs, len(class_names))
+
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(model.parameters(), lr=0.001)
+optimizer_ft = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
-num_classes = len(train_dataset.class_register.keys())
-model.fc = nn.Linear(model.fc.in_features, num_classes)
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
-# Обучение модели
-num_epochs = 10  # Замените на желаемое количество эпох обучения
+# Start train model
+model = train_model(
+    model,
+    device,
+    dataloaders,
+    dataset_sizes,
+    criterion,
+    optimizer_ft,
+    exp_lr_scheduler,
+    num_epochs=5,
+)
 
-# Настройте цикл обучения
-for epoch in range(num_epochs):
-    running_loss = 0.0
-    for i, data in enumerate(train_loader, 0):
-        inputs, labels = data
-
-        optimizer.zero_grad()
-
-        # Прямой проход через модель
-        outputs = model(inputs)
-
-        # Рассчитать потери и выполнить обратное распространение
-        loss = criterion(outputs, labels)
-        loss.backward()
-
-        # Обновление весов
-        optimizer.step()
-
-        running_loss += loss.item()
-        print(f"Epoch {epoch + 1}, Batch {i + 1}, Loss: {running_loss / 100:.3f}")
-
-torch.save(model, "./datamodels/base_model.pth")
+init_model.backup_model()
+torch.save(model, DATAMODEL_PATH)

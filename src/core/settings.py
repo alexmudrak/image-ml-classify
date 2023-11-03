@@ -2,4 +2,5 @@ import os
 
 DEBUG = bool(os.getenv("DEBUG", False))
 SECRET_KEY = os.getenv("SECRET_KEY", "")
-MODEL_PATH = os.getenv("MODEL_PATH", "./datamodels/model.pth")
+DATAMODEL_PATH = os.getenv("DATAMODEL_PATH", "./datamodels/model.pth")
+DATASETS_FOLDER = os.getenv("DATASETS_FOLDER", "./datasets/")
