@@ -9,7 +9,7 @@ def get_from_json_file(path: str) -> dict:
     return data
 
 
-def store_to_json_file(path: str, data: dict) -> None:
+def store_to_json_file(data: dict, path: str) -> None:
     with open(path, "w", encoding="utf-8") as json_file:
         json.dump(
             data,
@@ -28,7 +28,7 @@ def get_key_from_dict(dictionary: dict, value: str) -> str:
         return "0"
 
     keys = list(dictionary.keys())
-    last_key = int(keys[-1])
+    last_key = int(sorted(keys)[-1])
 
     last_key_number = int(last_key)
     new_key = str(last_key_number + 1)
