@@ -1,15 +1,16 @@
 import json
+from io import BytesIO
 
 import numpy
 import torch
 from flask import Flask, request
 from flask_restful import Api
 from PIL import Image
+from utils.file_utils import get_from_json_file
 
 from core.datasets import DatasetUtils
-from core.settings import DATAMODEL_PATH, DATASETS_FOLDER
+from core.settings import DATAMODEL_PATH, DATASETS_FOLDER, DEBUG
 from core.transforms import get_transorms
-from utils import get_from_json_file
 
 app = Flask(__name__)
 api = Api(app)
@@ -22,8 +23,8 @@ def upload():
     model.eval()
 
     file = request.files["file"]
-    file.save("./static/output.png")
-    image = Image.open("./static/output.png").convert("RGB")
+
+    image = Image.open(BytesIO(file.read())).convert("RGB")
     image_transform = get_transorms()["val"]
     image = image_transform(image)
 
@@ -34,7 +35,7 @@ def upload():
     return json.dumps({"answer": all_labels[str(preds[0].item())]})
 
 
-@app.route("/api/image2", methods=["POST"])
+@app.route("/api/image_check", methods=["POST"])
 def upload_2():
     model_init = DatasetUtils("./datamodels/origin_model_bk.pth")
     model = model_init.load_model()
@@ -54,4 +55,4 @@ def upload_2():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=6767)
+    app.run(host="0.0.0.0", port=6767, debug=DEBUG)
