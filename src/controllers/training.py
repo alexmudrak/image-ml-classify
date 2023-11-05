@@ -75,16 +75,33 @@ class TrainingController:
         training_process.start()
 
     def _train(self, epoch_count: int) -> None:
+        base_start_time = time.time()
+
         self._set_status(TrainingStatus.DATASET_SYNCHRONIZATION)
         self._prepeare_transforms()
         self._prepeare_dataset()
         self._prepeare_model()
+
+        dataset_sync_time = time.time() - base_start_time
+        start_time = time.time()
+
+        print("Start Train")
         self._set_status(TrainingStatus.MODEL_TRAINING)
         self._train_process(epoch_count)
+
+        model_training_time = time.time() - start_time
+        start_time = time.time()
+
         if self.model_object:
             self.model_object.backup_model()
             torch.save(self.model, self.model_folder_path)
+
         self._set_status(TrainingStatus.READY)
+
+        ready_time = time.time() - base_start_time
+        print(f"Dataset Synchronization Time: {dataset_sync_time} seconds")
+        print(f"Model Training Time: {model_training_time} seconds")
+        print(f"Ready Time: {ready_time} seconds")
 
     def _prepeare_transforms(self):
         self.transforms = CoreTranform.get_transorms()
