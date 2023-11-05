@@ -49,10 +49,7 @@ def train_model(
                     with torch.set_grad_enabled(phase == "train"):
                         outputs = model(inputs)
                         _, preds = torch.max(outputs, 1)
-                        try:
-                            loss = criterion(outputs, labels)
-                        except Exception:
-                            pass
+                        loss = criterion(outputs, labels)
                         if phase == "train":
                             loss.backward()
                             optimizer.step()

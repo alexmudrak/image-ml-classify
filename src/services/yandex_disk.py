@@ -2,13 +2,15 @@
 #       Need to check folder with dataset
 #       check md5 of folders, if new, try to
 #       download and run train model.
-#
+
 # TODO: Implement method, for uploading backup of
 #       model.
 
 # Est.
 # - New download: Total time: 885.48 seconds
 # - Not exist: Total time: 331.64 seconds
+# - Full new train: Total time: 1075.97 seconds
+# - Retrain: Total time: 605.18 seconds
 
 import asyncio
 import os
