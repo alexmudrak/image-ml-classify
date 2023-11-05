@@ -6,11 +6,11 @@ import torch
 from flask import Flask, request
 from flask_restful import Api
 from PIL import Image
-from utils.file_utils import get_from_json_file
 
-from core.datasets import DatasetUtils
+from core.dataset_models import CoreDatasetModel
 from core.settings import DATAMODEL_PATH, DATASETS_FOLDER, DEBUG
 from core.transforms import get_transorms
+from utils.file_utils import get_from_json_file
 
 app = Flask(__name__)
 api = Api(app)
@@ -18,7 +18,7 @@ api = Api(app)
 
 @app.route("/api/image", methods=["POST"])
 def upload():
-    model_init = DatasetUtils(DATAMODEL_PATH)
+    model_init = CoreDatasetModel(DATAMODEL_PATH)
     model = model_init.load_model()
     model.eval()
 
@@ -37,7 +37,7 @@ def upload():
 
 @app.route("/api/image_check", methods=["POST"])
 def upload_2():
-    model_init = DatasetUtils("./datamodels/origin_model_bk.pth")
+    model_init = CoreDatasetModel("./datamodels/origin_model_bk.pth")
     model = model_init.load_model()
     model.eval()
 

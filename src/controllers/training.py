@@ -8,10 +8,10 @@ from tempfile import TemporaryDirectory
 
 import torch
 
+from core.dataset_models import CoreDatasetModel
 from core.datasets import CoreDataset
 from core.schemas import TrainingStatus
-
-status_queue = multiprocessing.Queue()
+from core.settings import CLOUD_TYPE, DATAMODEL_PATH, DATASETS_FOLDER
 
 
 class TrainingController:
@@ -21,6 +21,9 @@ class TrainingController:
         self.model = None
         self.dataset = None
         self.transforms = None
+        self.dataset_folder_path = DATASETS_FOLDER
+        self.dataset_model_folder_path = DATAMODEL_PATH
+        self.cloud_service = CLOUD_TYPE
 
     def get_status(self) -> TrainingStatus:
         return self.status
@@ -55,7 +58,7 @@ class TrainingController:
         )
         training_process.start()
 
-    def _train(self, epoch_count: int):
+    def _train(self, epoch_count: int) -> None:
         self._set_status(TrainingStatus.DATASET_SYNCHRONIZATION)
         self._prepeare_dataset()
         self._prepeare_model()
@@ -65,13 +68,18 @@ class TrainingController:
         self._set_status(TrainingStatus.READY)
 
     def _prepeare_dataset(self):
-        # TODO: Get, normalize and set dataset
-        CoreDataset.cloud_load()
+        if self.cloud_service:
+            # Check and download dataset from CLOUD
+            # service
+            CoreDataset.cloud_load()
         CoreDataset.normalize_dataset()
+        # QUESTION: What sould to set?
+        self.dataset = ...
 
     def _prepeare_model(self):
-        # TODO: Get and set model
-        pass
+        self.model_object = CoreDatasetModel(self.dataset_model_folder_path)
+        self.model_object.load_model()
+        self.model = self.model_object.model
 
     def _prepeare_transforms(self):
         # TODO: Get and set transforms

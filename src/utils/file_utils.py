@@ -26,10 +26,12 @@ def backup_file(file_path: str) -> None:
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
     file_name = os.path.basename(file_path)
-    backup_path = (
-        f"./{BACKUPS_FOLDER}/{os.path.splitext(file_name)[0]}_backup_{timestamp}.pth"
+    backup_path = os.path.join(
+        BACKUPS_FOLDER,
+        f"{os.path.splitext(file_name)[0]}_backup_{timestamp}.pth",
     )
 
+    # TODO: Add logger
     try:
         shutil.copy(file_path, backup_path)
         print(f"Model backed up to {backup_path}")
