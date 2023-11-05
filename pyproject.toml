@@ -27,3 +27,4 @@ license = {text = "MIT"}
 _.env_file = ".env"
 init = "pre-commit install"
 start = "python src/app.py"
+server = "gunicorn -w 4 -b 0.0.0.0:6767 src.app:app"
