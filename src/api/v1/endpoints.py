@@ -37,6 +37,7 @@ class TrianImageModelAPI(Resource):
         if not RequestValidator.is_valid_x_key(request):
             return AppResponses.error_not_valid_x_key()
         # TODO: Implement train epoch by request body
+        # TODO: Implement hard run from request body
         self.training_controller.run_train(5)
         current_status = self.training_controller.get_status()
         return AppResponses.return_status(current_status.value, 202)

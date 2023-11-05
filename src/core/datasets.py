@@ -9,6 +9,7 @@ from services.yandex_disk import YandexDisk
 class CoreDataset:
     @staticmethod
     def normalize_dataset():
+        # TODO: Add documentation
         source_directory = os.path.join(DATASETS_FOLDER, "train")
         target_directory = os.path.join(DATASETS_FOLDER, "val")
 

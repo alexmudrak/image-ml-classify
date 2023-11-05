@@ -6,7 +6,7 @@ from PIL import Image
 
 from core.dataset_models import CoreDatasetModel
 from core.settings import DATAMODEL_PATH, DATASETS_FOLDER
-from core.transforms import get_transorms
+from core.transforms import CoreTranform
 from utils.file_utils import get_from_json_file
 
 
@@ -18,7 +18,7 @@ class ClassificationController:
         model.eval()
 
         image = Image.open(BytesIO(file.read())).convert("RGB")
-        image_transform = get_transorms()["val"]
+        image_transform = CoreTranform.get_transorms()["val"]
         image = image_transform(image)
 
         outputs = model(torch.Tensor(np.array(image)).unsqueeze(0))
