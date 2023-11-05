@@ -39,6 +39,7 @@ nvidia-nvjitlink-cu12==12.3.52
 nvidia-nvtx-cu12==12.1.105
 packaging==23.2
 pillow==10.1.0
+python-dotenv==1.0.0
 pytz==2023.3.post1
 requests==2.31.0
 six==1.16.0
