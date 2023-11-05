@@ -50,7 +50,6 @@ def train_model(
                         outputs = model(inputs)
                         _, preds = torch.max(outputs, 1)
                         loss = criterion(outputs, labels)
-
                         if phase == "train":
                             loss.backward()
                             optimizer.step()
