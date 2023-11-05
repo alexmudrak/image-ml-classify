@@ -18,6 +18,7 @@ def register_endpoints_v1(api: Api) -> None:
     api.add_resource(TrianImageModelAPI, api_v1 + "train")
 
 
+app = create_app()
+
 if __name__ == "__main__":
-    app = create_app()
     app.run(host="0.0.0.0", port=6767, debug=DEBUG)

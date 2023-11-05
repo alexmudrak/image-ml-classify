@@ -6,3 +6,7 @@ class AppResponses:
     @staticmethod
     def return_answer(answer: str) -> tuple[dict, int]:
         return {"answer": answer}, 200
+
+    @staticmethod
+    def return_status(status: str, code: int) -> tuple[dict, int]:
+        return {"status": status}, code

@@ -1,10 +1,84 @@
 # Based on https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
 
+import multiprocessing
 import os
+import pickle
 import time
 from tempfile import TemporaryDirectory
 
 import torch
+
+from core.datasets import CoreDataset
+from core.schemas import TrainingStatus
+
+status_queue = multiprocessing.Queue()
+
+
+class TrainingController:
+    def __init__(self, status_db: str) -> None:
+        self.status_db = status_db
+        self.status = self._load_status()
+        self.model = None
+        self.dataset = None
+        self.transforms = None
+
+    def get_status(self) -> TrainingStatus:
+        return self.status
+
+    def _set_status(self, status_name: TrainingStatus) -> None:
+        self.status = status_name
+        self._save_status()
+
+    def _load_status(self):
+        if os.path.exists(self.status_db):
+            with open(self.status_db, "rb") as status_file:
+                status = pickle.load(status_file)
+                return status
+        else:
+            return TrainingStatus.READY
+
+    def _save_status(self):
+        with open(self.status_db, "wb") as status_file:
+            pickle.dump(self.status, status_file)
+
+    def run_train(self, epoch_count: int = 5) -> None:
+        if self.status in [
+            TrainingStatus.MODEL_TRAINING,
+            TrainingStatus.DATASET_SYNCHRONIZATION,
+        ]:
+            return
+
+        self._set_status(TrainingStatus.MODEL_TRAINING)
+
+        training_process = multiprocessing.Process(
+            target=self._train, args=(epoch_count,)
+        )
+        training_process.start()
+
+    def _train(self, epoch_count: int):
+        self._set_status(TrainingStatus.DATASET_SYNCHRONIZATION)
+        self._prepeare_dataset()
+        self._prepeare_model()
+        self._prepeare_transforms()
+        self._set_status(TrainingStatus.MODEL_TRAINING)
+        self._train_process(epoch_count)
+        self._set_status(TrainingStatus.READY)
+
+    def _prepeare_dataset(self):
+        # TODO: Get, normalize and set dataset
+        CoreDataset.cloud_load()
+        CoreDataset.normalize_dataset()
+
+    def _prepeare_model(self):
+        # TODO: Get and set model
+        pass
+
+    def _prepeare_transforms(self):
+        # TODO: Get and set transforms
+        pass
+
+    def _train_process(self, epoch_count: int):
+        pass
 
 
 def train_model(

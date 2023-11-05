@@ -15,6 +15,7 @@ from core.transforms import get_transorms
 from utils.file_utils import store_to_json_file
 
 
+# TODO: Remove
 def normalize_dataset():
     # Путь к исходному каталогу с исходными данными
     source_directory = os.path.join(DATASETS_FOLDER, "train")

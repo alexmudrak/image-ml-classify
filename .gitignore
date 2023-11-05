@@ -165,3 +165,4 @@ datasets/*/
 static/*/
 *.png
 tmp/*
+*.db

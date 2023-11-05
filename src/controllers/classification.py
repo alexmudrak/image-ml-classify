@@ -3,7 +3,6 @@ from io import BytesIO
 import numpy as np
 import torch
 from PIL import Image
-from utils.file_utils import get_from_json_file
 
 # TODO: Create CoreDataset class
 from core.datasets import DatasetUtils
@@ -11,11 +10,12 @@ from core.datasets import DatasetUtils
 from core.settings import DATAMODEL_PATH, DATASETS_FOLDER
 # TODO: Create CoreTransform class
 from core.transforms import get_transorms
+from utils.file_utils import get_from_json_file
 
 
 class ClassificationController:
     @staticmethod
-    def classify_image(file):
+    def get_classify_image(file):
         model_init = DatasetUtils(DATAMODEL_PATH)
         model = model_init.load_model()
         model.eval()
