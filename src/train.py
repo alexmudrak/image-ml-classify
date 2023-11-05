@@ -12,7 +12,7 @@ from controllers.training import train_model
 from core.datasets import DatasetUtils
 from core.settings import DATAMODEL_PATH, DATASETS_FOLDER
 from core.transforms import get_transorms
-from utils import store_to_json_file
+from utils.file_utils import store_to_json_file
 
 
 def normalize_dataset():

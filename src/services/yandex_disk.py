@@ -14,9 +14,11 @@
 
 import asyncio
 import os
+import shutil
 import time
 
 import yadisk_async
+from yadisk_async.yadisk import YaDisk
 
 from train import train_model_start
 
@@ -29,23 +31,30 @@ async def download_file(client, remote_file_path, local_file_path):
     await client.download(remote_file_path, local_file_path)
 
 
-async def testing(client, remote_folder_path: str, local_folder_path: str):
+async def testing(
+    client: YaDisk,
+    remote_folder_path: str,
+    local_folder_path: str,
+    level: int = 0,
+):
     if not await client.check_token():
         raise Exception("Not valid token")
 
-    remote_objects = client.listdir(remote_folder_path)
+    remote_objects = await client.listdir(remote_folder_path)
     local_objects = os.listdir(local_folder_path)
 
+    base_level_folders = []
     tasks = []
-    async for remote_object in await remote_objects:
+    async for remote_object in remote_objects:
         remote_file_path = os.path.join(remote_folder_path, remote_object.name)
         local_file_path = os.path.join(local_folder_path, remote_object.name)
 
         if await remote_object.is_dir():
+            base_level_folders.append(remote_object.name)
             if not os.path.exists(local_file_path):
                 os.makedirs(local_file_path)
 
-            await testing(client, remote_file_path, local_file_path)
+            await testing(client, remote_file_path, local_file_path, level + 1)
         else:
             if remote_object.name not in local_objects:
                 tasks.append(
@@ -55,11 +64,18 @@ async def testing(client, remote_folder_path: str, local_folder_path: str):
                         local_file_path,
                     )
                 )
+    if level == 0:
+        # Find and delete local directories that don't exist in remote_objects
+        for local_dir in os.listdir(local_folder_path):
+            local_dir_path = os.path.join(local_folder_path, local_dir)
+            if os.path.isdir(local_dir_path) and local_dir not in base_level_folders:
+                shutil.rmtree(local_dir_path)
 
     await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":
+    # TODO: move credentials to .env
     client = yadisk_async.YaDisk(
         id="80fa5e9e7f374650bbee111065c60930",
         secret="074c41c91b9c442f8820037db528b3a2",

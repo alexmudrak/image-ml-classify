@@ -5,6 +5,8 @@ from datetime import datetime
 import torch
 from torchvision import models
 
+from core.settings import BACKUPS_FOLDER
+
 
 class DatasetUtils:
     def __init__(self, model_path: str):
@@ -21,11 +23,13 @@ class DatasetUtils:
         return model
 
     def backup_model(self):
+        # TODO: move implementation to file utils
         now = datetime.now()
         timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
         model_name = os.path.basename(self.model_path)
-        backup_path = (
-            f"./datamodels/{os.path.splitext(model_name)[0]}_backup_{timestamp}.pth"
+        base_filename = os.path.splitext(model_name)[0]
+        backup_path = os.path.join(
+            BACKUPS_FOLDER, f"{base_filename}_backup_{timestamp}.pth"
         )
 
         try:
