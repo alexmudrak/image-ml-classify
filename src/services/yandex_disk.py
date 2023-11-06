@@ -20,21 +20,20 @@ logger = app_logger(__name__)
 
 
 class YandexDisk:
-    def __init__(self):
+    def __init__(self) -> None:
         self.id = CLOUD_ID
         self.token = CLOUD_TOKEN
         self.secret = CLOUD_SECRET
         self.remote_dataset_path = CLOUD_TRAIN_DATASET_PATH
         self.local_dataset_path = LOCAL_TRAIN_DATASET_PATH
 
-    def sync_data(self):
+    def sync_data(self) -> None:
         if (
             not self.id
             or not self.token
             or not self.secret
             or not self.remote_dataset_path
         ):
-            # TODO: create behavior
             raise ValueError("One or more required parameters are missing")
 
         client = YaDisk(
@@ -57,7 +56,8 @@ class YandexDisk:
         remote_folder_path: str,
         local_folder_path: str,
         level: int = 0,
-    ):
+    ) -> None:
+        # TODO: Add documentation
         remote_objects = await client.listdir(remote_folder_path)
         local_objects = os.listdir(local_folder_path)
 
@@ -102,7 +102,12 @@ class YandexDisk:
 
         await asyncio.gather(*tasks)
 
-    async def _download_file(self, client, remote_file_path, local_file_path):
+    async def _download_file(
+        self,
+        client: YaDisk,
+        remote_file_path: str,
+        local_file_path: str,
+    ) -> None:
         logger.info(f"Downloading {remote_file_path} to {local_file_path}")
         await client.download(remote_file_path, local_file_path)
 

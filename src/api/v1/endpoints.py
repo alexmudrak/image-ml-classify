@@ -3,13 +3,13 @@ from flask_restful import Resource
 
 from controllers.classification import ClassificationController
 from controllers.training import TrainingController
-from core.responses import AppResponses
+from core.responses import AppResponses, Response
 from core.settings import DB_STATUS_FILE
 from validators.request_validators import RequestValidator
 
 
 class ClassificateImageAPI(Resource):
-    def post(self):
+    def post(self) -> Response:
         if not RequestValidator.is_valid_x_key(request):
             return AppResponses.error_not_valid_x_key()
         file = request.files["file"]
@@ -18,16 +18,16 @@ class ClassificateImageAPI(Resource):
 
 
 class TrianImageModelAPI(Resource):
-    def __init__(self):
+    def __init__(self) -> None:
         self.training_controller = TrainingController(DB_STATUS_FILE)
 
-    def get(self):
+    def get(self) -> Response:
         if not RequestValidator.is_valid_x_key(request):
             return AppResponses.error_not_valid_x_key()
         current_status = self.training_controller.get_status()
         return AppResponses.return_status(current_status.value, 200)
 
-    def post(self):
+    def post(self) -> Response:
         if not RequestValidator.is_valid_x_key(request):
             return AppResponses.error_not_valid_x_key()
         # TODO: Implement train epoch by request body
