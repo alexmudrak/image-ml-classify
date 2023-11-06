@@ -1,17 +1,5 @@
-# TODO: Implement Yandeks Disk client
-#       Need to check folder with dataset
-#       check md5 of folders, if new, try to
-#       download and run train model.
-
 # TODO: Implement method, for uploading backup of
 #       model.
-
-# Est.
-# - New download: Total time: 885.48 seconds
-# - Not exist: Total time: 331.64 seconds
-# - Full new train: Total time: 1075.97 seconds
-# - Retrain: Total time: 605.18 seconds
-
 import asyncio
 import os
 import shutil
@@ -19,8 +7,16 @@ import time
 
 from yadisk_async.yadisk import YaDisk
 
-from core.settings import (CLOUD_ID, CLOUD_SECRET, CLOUD_TOKEN,
-                           CLOUD_TRAIN_DATASET_PATH, LOCAL_TRAIN_DATASET_PATH)
+from core.logger import app_logger
+from core.settings import (
+    CLOUD_ID,
+    CLOUD_SECRET,
+    CLOUD_TOKEN,
+    CLOUD_TRAIN_DATASET_PATH,
+    LOCAL_TRAIN_DATASET_PATH,
+)
+
+logger = app_logger(__name__)
 
 
 class YandexDisk:
@@ -39,8 +35,8 @@ class YandexDisk:
             or not self.remote_dataset_path
         ):
             # TODO: create behavior
+            raise ValueError("One or more required parameters are missing")
 
-            return
         client = YaDisk(
             id=self.id,
             secret=self.secret,
@@ -71,8 +67,12 @@ class YandexDisk:
             if not remote_object.name:
                 continue
 
-            remote_file_path = os.path.join(remote_folder_path, remote_object.name)
-            local_file_path = os.path.join(local_folder_path, remote_object.name)
+            remote_file_path = os.path.join(
+                remote_folder_path, remote_object.name
+            )
+            local_file_path = os.path.join(
+                local_folder_path, remote_object.name
+            )
 
             if await remote_object.is_dir():
                 base_level_folders.append(remote_object.name)
@@ -103,21 +103,17 @@ class YandexDisk:
         await asyncio.gather(*tasks)
 
     async def _download_file(self, client, remote_file_path, local_file_path):
-        print(f"Downloading {remote_file_path} to {local_file_path}")
-        # TODO: Add logger
+        logger.info(f"Downloading {remote_file_path} to {local_file_path}")
         await client.download(remote_file_path, local_file_path)
 
 
 if __name__ == "__main__":
-    # TODO: move credentials to .env
     client = YandexDisk()
     start_time = time.time()
+    logger.info("Checking dataset")
 
-    print("Check dataset")
     client.sync_data()
-    print("Start train model")
-    # train_model_start()
 
     end_time = time.time()
     execution_time = end_time - start_time
-    print(f"Total executTotal execution time: {execution_time} seconds")
+    logger.info(f"Total execution time: {execution_time} seconds")
