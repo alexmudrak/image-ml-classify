@@ -5,7 +5,15 @@ from flask_restful import Api
 
 from api.v1.endpoints import ClassificateImageAPI, TrianImageModelAPI
 from core.logger import app_logger
-from core.settings import DATASET_MODEL_STATUS_DB_PATH, DEBUG
+from core.settings import (
+    BACKUPS_FOLDER,
+    DATASET_FOLDER,
+    DATASET_MODEL_PATH,
+    DATASET_MODEL_STATUS_DB_PATH,
+    DEBUG,
+    LOCAL_TRAIN_DATASET_PATH,
+    LOCAL_VALID_DATASET_PATH,
+)
 
 
 def create_app() -> Flask:
@@ -21,7 +29,25 @@ def register_endpoints_v1(api: Api) -> None:
     api.add_resource(TrianImageModelAPI, api_v1 + "train")
 
 
+# Function to check and create directories
+def check_and_create_directories(directories):
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            logger.info(f"Created directory: {directory}")
+
+
 logger = app_logger(__name__)
+
+directories_to_check = [
+    DATASET_FOLDER,
+    DATASET_MODEL_PATH,
+    LOCAL_TRAIN_DATASET_PATH,
+    LOCAL_VALID_DATASET_PATH,
+    BACKUPS_FOLDER,
+]
+check_and_create_directories(directories_to_check)
+
 app = create_app()
 
 if os.path.exists(DATASET_MODEL_STATUS_DB_PATH):

@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  api_services:
+    container_name: api_service
+    restart: always
+    build:
+      context: .
+    ports:
+      - "6767:6767"
+    volumes:
+      - ./datasets:/app/datasets
+      - ./datamodels:/app/datamodels
+      - ./backups:/app/backups
+    env_file: .env
+    environment:
+      - PYTHONPATH=src
+      - DEBUG=
+      - FLASK_ENV=production
+      - SECRET_KEY=123

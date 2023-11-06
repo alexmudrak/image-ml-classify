@@ -28,6 +28,7 @@ class CoreDatasetModel:
             model.to(self.device)
             torch.save(model, self.model_path)
         self.model = model
+        logger.info(f"Use Device: {self.device}...")
         return self.model
 
     def backup_model(self):
