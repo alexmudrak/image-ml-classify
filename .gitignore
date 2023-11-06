@@ -166,3 +166,4 @@ static/*/
 *.png
 tmp/*
 *.db
+*.json
