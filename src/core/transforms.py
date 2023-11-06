@@ -1,5 +1,7 @@
 from torchvision import transforms
 
+from core.settings import DATASET_TRAIN_FOLDER_NAME, DATASET_VALID_FOLDER_NAME
+
 
 class CoreTranform:
     @staticmethod
@@ -16,20 +18,24 @@ class CoreTranform:
         resizing, center cropping, and normalization.
         """
         return {
-            "train": transforms.Compose(
+            DATASET_TRAIN_FOLDER_NAME: transforms.Compose(
                 [
                     transforms.RandomResizedCrop(224),
                     transforms.RandomHorizontalFlip(),
                     transforms.ToTensor(),
-                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+                    transforms.Normalize(
+                        [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
+                    ),
                 ]
             ),
-            "val": transforms.Compose(
+            DATASET_VALID_FOLDER_NAME: transforms.Compose(
                 [
                     transforms.Resize(260),
                     transforms.CenterCrop(224),
                     transforms.ToTensor(),
-                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+                    transforms.Normalize(
+                        [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
+                    ),
                 ]
             ),
         }

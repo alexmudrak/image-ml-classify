@@ -3,7 +3,11 @@ import random
 import shutil
 
 from core.logger import app_logger
-from core.settings import CLOUD_TYPE, DATASETS_FOLDER
+from core.settings import (
+    CLOUD_TYPE,
+    LOCAL_TRAIN_DATASET_PATH,
+    LOCAL_VALID_DATASET_PATH,
+)
 from services.yandex_disk import YandexDisk
 
 logger = app_logger(__name__)
@@ -23,8 +27,8 @@ class CoreDataset:
         It achieves this by redistributing a portion (30%) of image from
         'train' to 'val'.
         """
-        source_directory = os.path.join(DATASETS_FOLDER, "train")
-        target_directory = os.path.join(DATASETS_FOLDER, "val")
+        source_directory = LOCAL_TRAIN_DATASET_PATH
+        target_directory = LOCAL_VALID_DATASET_PATH
 
         source_dirs = os.listdir(source_directory)
         target_dirs = os.listdir(target_directory)

@@ -16,9 +16,17 @@ from core.dataset_models import CoreDatasetModel
 from core.datasets import CoreDataset
 from core.logger import app_logger
 from core.schemas import TrainingStatus
-from core.settings import CLOUD_TYPE, DATAMODEL_PATH, DATASETS_FOLDER
+from core.settings import (
+    CLOUD_TYPE,
+    DATASET_CLASSES_PATH,
+    DATASET_FOLDER,
+    DATASET_MODEL_PATH,
+    DATASET_TRAIN_FOLDER_NAME,
+    DATASET_VALID_FOLDER_NAME,
+    LOCAL_VALID_DATASET_PATH,
+)
 from core.transforms import CoreTranform
-from utils.file_utils import store_to_json_file
+from utils.file_utils import remove_all_folders, store_to_json_file
 
 logger = app_logger(__name__)
 
@@ -32,11 +40,11 @@ class TrainingController:
         self.model_criterion = None
         self.model_optimizer = None
         self.model_scheduler = None
-        self.model_folder_path = DATAMODEL_PATH
+        self.model_folder_path = DATASET_MODEL_PATH
         self.dataset_loaders = None
         self.dataset_sizes = None
         self.dataset_class_size = None
-        self.dataset_folder_path = DATASETS_FOLDER
+        self.dataset_folder_path = DATASET_FOLDER
         self.transforms = None
         self.cloud_service = CLOUD_TYPE
 
@@ -128,6 +136,8 @@ class TrainingController:
         if not self.transforms:
             raise ValueError("Transforms not set. Please set a valid value.")
 
+        remove_all_folders(LOCAL_VALID_DATASET_PATH)
+
         if self.cloud_service:
             # Check and download dataset from CLOUD service
             logger.info(
@@ -142,21 +152,22 @@ class TrainingController:
             x: datasets.ImageFolder(
                 os.path.join(self.dataset_folder_path, x), self.transforms[x]
             )
-            for x in ["train", "val"]
+            for x in [DATASET_TRAIN_FOLDER_NAME, DATASET_VALID_FOLDER_NAME]
         }
         self.dataset_loaders = {
             x: torch.utils.data.DataLoader(
                 image_datasets[x], batch_size=4, shuffle=True, num_workers=4
             )
-            for x in ["train", "val"]
+            for x in [DATASET_TRAIN_FOLDER_NAME, DATASET_VALID_FOLDER_NAME]
         }
 
         self.dataset_sizes = {
-            x: len(image_datasets[x]) for x in ["train", "val"]
+            x: len(image_datasets[x])
+            for x in [DATASET_TRAIN_FOLDER_NAME, DATASET_VALID_FOLDER_NAME]
         }
 
-        class_names = image_datasets["train"].classes
-        val_class_names = image_datasets["val"].classes
+        class_names = image_datasets[DATASET_TRAIN_FOLDER_NAME].classes
+        val_class_names = image_datasets[DATASET_VALID_FOLDER_NAME].classes
 
         json_classes = {
             index: value for index, value in enumerate(class_names)
@@ -166,8 +177,7 @@ class TrainingController:
         )
         store_to_json_file(
             json_classes,
-            # TODO: create env variable
-            "./datasets/classes.json",
+            DATASET_CLASSES_PATH,
         )
         self.dataset_class_size = len(class_names)
 
@@ -242,8 +252,11 @@ class TrainingController:
             for epoch in range(epoch_count):
                 logger.info(f"Epoch {epoch}/{epoch_count - 1}")
 
-                for phase in ["train", "val"]:
-                    if phase == "train":
+                for phase in [
+                    DATASET_TRAIN_FOLDER_NAME,
+                    DATASET_VALID_FOLDER_NAME,
+                ]:
+                    if phase == DATASET_TRAIN_FOLDER_NAME:
                         self.model.train()
                     else:
                         self.model.eval()
@@ -257,17 +270,19 @@ class TrainingController:
 
                         self.model_optimizer.zero_grad()
 
-                        with torch.set_grad_enabled(phase == "train"):
+                        with torch.set_grad_enabled(
+                            phase == DATASET_TRAIN_FOLDER_NAME
+                        ):
                             outputs = self.model(inputs)
                             _, preds = torch.max(outputs, 1)
                             loss = self.model_criterion(outputs, labels)
-                            if phase == "train":
+                            if phase == DATASET_TRAIN_FOLDER_NAME:
                                 loss.backward()
                                 self.model_optimizer.step()
 
                         running_loss += loss.item() * inputs.size(0)
                         running_corrects += torch.sum(preds == labels.data)
-                    if phase == "train":
+                    if phase == DATASET_TRAIN_FOLDER_NAME:
                         self.model_scheduler.step()
 
                     epoch_loss = running_loss / self.dataset_sizes[phase]
@@ -278,7 +293,10 @@ class TrainingController:
                         f"{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}"
                     )
 
-                    if phase == "val" and epoch_acc > best_acc:
+                    if (
+                        phase == DATASET_VALID_FOLDER_NAME
+                        and epoch_acc > best_acc
+                    ):
                         best_acc = epoch_acc
                         torch.save(
                             self.model.state_dict(), best_model_params_path
