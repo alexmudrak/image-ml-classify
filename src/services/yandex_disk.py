@@ -80,7 +80,7 @@ class YandexDisk:
             if not remote_object.name:
                 continue
 
-            logger.debug(f"Checking {remote_object.name}...")
+            logger.debug(f"Checking {remote_object.path}...")
 
             remote_file_path = os.path.join(
                 remote_folder_path, remote_object.name
