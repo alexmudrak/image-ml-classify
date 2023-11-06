@@ -1,9 +1,12 @@
 # Run
 
-- Need to add base model into `datamodels` folder
+-   Need to add base model into `datamodels` folder
+
+
 
 # Getting credentials for Yandex.Disk
-
+<details>
+    <summary>How-To?</summary>
 Requirements:
 
 - Create a new application (optional, you can use a third-party
@@ -42,3 +45,5 @@ curl -X POST \
 -F "client_secret={APP_SECRET}" \
 -F "code={AUTH_CODE}" \
 ```
+
+</details>
