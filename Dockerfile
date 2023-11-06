@@ -12,4 +12,4 @@ RUN mkdir /app/datasets/val/
 
 COPY ./src/ /app/
 
-CMD ["gunicorn", "-b", "0.0.0.0:6767", "app:app"]
+CMD ["gunicorn", "-b 0.0.0.0:6767", "-w 2", "--threads=2", "app:app"]

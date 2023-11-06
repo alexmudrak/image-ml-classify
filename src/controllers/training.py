@@ -73,7 +73,11 @@ class TrainingController:
         self,
         epoch_count: int = 5,
         hard_run: bool = False,
+        run_as: str = "all",
     ) -> None:
+        logger.debug(
+            f"Hard run: {hard_run}. Run as: {run_as}. Epoch: {epoch_count}"
+        )
         if (
             self.status
             in [
@@ -91,17 +95,17 @@ class TrainingController:
         self._set_status(TrainingStatus.MODEL_TRAINING)
 
         training_process = multiprocessing.Process(
-            target=self._train, args=(epoch_count,)
+            target=self._train, args=(epoch_count, run_as)
         )
         training_process.start()
 
-    def _train(self, epoch_count: int) -> None:
+    def _train(self, epoch_count: int, run_as: str = "all") -> None:
         """Perform the model training process."""
         base_start_time = time.time()
 
         self._set_status(TrainingStatus.DATASET_SYNCHRONIZATION)
         self._prepeare_transforms()
-        self._prepeare_dataset()
+        self._prepeare_dataset(run_as)
         self._prepeare_model()
 
         dataset_sync_time = time.time() - base_start_time
@@ -131,14 +135,14 @@ class TrainingController:
     def _prepeare_transforms(self) -> None:
         self.transforms = CoreTranform.get_transorms()
 
-    def _prepeare_dataset(self) -> None:
+    def _prepeare_dataset(self, services: str = "all") -> None:
         logger.info("Preparing dataset...")
         if not self.transforms:
             raise ValueError("Transforms not set. Please set a valid value.")
 
         remove_all_folders(LOCAL_VALID_DATASET_PATH)
 
-        if self.cloud_service:
+        if self.cloud_service and services in ["all", "sync_dataset"]:
             # Check and download dataset from CLOUD service
             logger.info(
                 "Checking and downloading dataset from the cloud "
