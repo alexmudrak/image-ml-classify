@@ -88,6 +88,7 @@ class TrainingController:
         training_process.start()
 
     def _train(self, epoch_count: int) -> None:
+        """Perform the model training process."""
         base_start_time = time.time()
 
         self._set_status(TrainingStatus.DATASET_SYNCHRONIZATION)
@@ -212,6 +213,9 @@ class TrainingController:
         )
 
     def _train_process(self, epoch_count: int) -> None:
+        """
+        Perform the training process for a specified number of epochs.
+        """
         since = time.time()
         if (
             not self.model

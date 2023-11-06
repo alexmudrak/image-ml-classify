@@ -57,7 +57,20 @@ class YandexDisk:
         local_folder_path: str,
         level: int = 0,
     ) -> None:
-        # TODO: Add documentation
+        """
+        Recursively synchronize files and folders between a remote and local
+        directory.
+
+        This method compares the contents of the specified remote folder with
+        the local folder. It will download files from the remote folder to the
+        local folder if they do not exist locally.
+
+        If a remote folder contains subdirectories, it will also be recursively
+        synchronized.
+
+        Folders that exist only locally and not on the remote are deleted if
+        level is 0 (base level).
+        """
         remote_objects = await client.listdir(remote_folder_path)
         local_objects = os.listdir(local_folder_path)
 
