@@ -25,3 +25,15 @@ _.env_file = ".env"
 init = "pre-commit install"
 dev_server = "python src/app.py"
 server = "gunicorn -w 4 -b 0.0.0.0:6767 src.app:app"
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+line_length = 79
+profile = "black"
+
+[tool.ruff]
+line-length = 79
+fixable = ["ALL"]
+unfixable = []

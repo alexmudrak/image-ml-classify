@@ -3,10 +3,14 @@ import os
 import shutil
 from datetime import datetime
 
+from core.logger import app_logger
 from core.settings import BACKUPS_FOLDER
+
+logger = app_logger(__name__)
 
 
 def get_from_json_file(path: str) -> dict:
+    logger.info(f"Trying get json data from {path}")
     with open(path, "r", encoding="utf-8") as json_file:
         data = json.load(json_file)
     return data
@@ -31,14 +35,13 @@ def backup_file(file_path: str) -> None:
         f"{os.path.splitext(file_name)[0]}_backup_{timestamp}.pth",
     )
 
-    # TODO: Add logger
     try:
         shutil.copy(file_path, backup_path)
-        print(f"Model backed up to {backup_path}")
+        logger.info(f"Model backed up to {backup_path}")
     except FileNotFoundError:
-        print("Error: The source model file does not exist.")
+        logger.error("Error: The source model file does not exist.")
     except Exception as e:
-        print(f"An error occurred while creating a backup: {str(e)}")
+        logger.error(f"An error occurred while creating a backup: {str(e)}")
 
 
 def remove_all_folders(base_dir: str) -> None:
@@ -48,8 +51,13 @@ def remove_all_folders(base_dir: str) -> None:
             if os.path.isdir(item_path):
                 try:
                     shutil.rmtree(item_path)
-                    print(f"Directory {item_path} removed.")
+                    logger.warning(
+                        f"Directory '{item_path}' has been "
+                        "successfully removed."
+                    )
                 except Exception as e:
-                    print(f"Failed to remove directory {item_path}: {e}")
+                    logger.error(
+                        f"Failed to remove directory {item_path}: {e}"
+                    )
     else:
-        print(f"Folder {base_dir} does not exist.")
+        logger.info(f"The folder '{base_dir}' does not exist.")
