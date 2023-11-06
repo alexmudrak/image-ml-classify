@@ -5,7 +5,7 @@ from flask_restful import Api
 
 from api.v1.endpoints import ClassificateImageAPI, TrianImageModelAPI
 from core.logger import app_logger
-from core.settings import DB_STATUS_FILE, DEBUG
+from core.settings import DATASET_MODEL_STATUS_DB_PATH, DEBUG
 
 
 def create_app() -> Flask:
@@ -24,9 +24,9 @@ def register_endpoints_v1(api: Api) -> None:
 logger = app_logger(__name__)
 app = create_app()
 
-if os.path.exists(DB_STATUS_FILE):
-    logger.info(f"Removed old status DB file: {DB_STATUS_FILE}")
-    os.remove(DB_STATUS_FILE)
+if os.path.exists(DATASET_MODEL_STATUS_DB_PATH):
+    logger.info(f"Removed old status DB file: {DATASET_MODEL_STATUS_DB_PATH}")
+    os.remove(DATASET_MODEL_STATUS_DB_PATH)
 
 
 if __name__ == "__main__":

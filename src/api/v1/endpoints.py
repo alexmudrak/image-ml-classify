@@ -5,7 +5,7 @@ from werkzeug.exceptions import UnsupportedMediaType
 from controllers.classification import ClassificationController
 from controllers.training import TrainingController
 from core.responses import AppResponses, Response
-from core.settings import DB_STATUS_FILE
+from core.settings import DATASET_MODEL_STATUS_DB_PATH
 from validators.request_validators import RequestValidator
 
 
@@ -18,7 +18,9 @@ class ClassificateImageAPI(Resource):
 
 class TrianImageModelAPI(Resource):
     def __init__(self) -> None:
-        self.training_controller = TrainingController(DB_STATUS_FILE)
+        self.training_controller = TrainingController(
+            DATASET_MODEL_STATUS_DB_PATH
+        )
 
     def get(self) -> Response:
         if not RequestValidator.is_valid_x_key(request):
