@@ -1,5 +1,6 @@
 from flask import request
 from flask_restful import Resource
+from werkzeug.exceptions import UnsupportedMediaType
 
 from controllers.classification import ClassificationController
 from controllers.training import TrainingController
@@ -10,8 +11,6 @@ from validators.request_validators import RequestValidator
 
 class ClassificateImageAPI(Resource):
     def post(self) -> Response:
-        if not RequestValidator.is_valid_x_key(request):
-            return AppResponses.error_not_valid_x_key()
         file = request.files["file"]
         answer = ClassificationController.get_classify_image(file)
         return AppResponses.return_answer(answer)
@@ -30,8 +29,18 @@ class TrianImageModelAPI(Resource):
     def post(self) -> Response:
         if not RequestValidator.is_valid_x_key(request):
             return AppResponses.error_not_valid_x_key()
-        # TODO: Implement train epoch by request body
-        # TODO: Implement hard run from request body
-        self.training_controller.run_train(5)
+
+        try:
+            request_json = request.json or {}
+        except UnsupportedMediaType:
+            request_json = {}
+
+        epoch = request_json.get("epoch", 5)
+        hard_run = request_json.get("hard_run", False)
+
+        self.training_controller.run_train(
+            epoch_count=epoch,
+            hard_run=hard_run,
+        )
         current_status = self.training_controller.get_status()
         return AppResponses.return_status(current_status.value, 202)
