@@ -12,8 +12,17 @@ logger = app_logger(__name__)
 class CoreDataset:
     @staticmethod
     def normalize_dataset() -> None:
-        # TODO: Add documentation
+        """
+        Normalize the dataset by redistributing images from the 'train' folder
+        to the 'val' folder.
 
+        This method is responsible for ensuring that both the 'train' and 'val'
+        folders have a consistent set of classes and a similar distribution of
+        images.
+
+        It achieves this by redistributing a portion (30%) of image from
+        'train' to 'val'.
+        """
         source_directory = os.path.join(DATASETS_FOLDER, "train")
         target_directory = os.path.join(DATASETS_FOLDER, "val")
 
@@ -36,6 +45,9 @@ class CoreDataset:
                 source_dir_path = os.path.join(source_directory, source_dir)
                 files_to_move = os.listdir(source_dir_path)
 
+                logger.info(
+                    "Redistributing 30% of files to the 'val' folder..."
+                )
                 num_files_to_move = int(0.3 * len(files_to_move))
 
                 files_to_move = random.sample(files_to_move, num_files_to_move)
