@@ -11,7 +11,7 @@ logger = app_logger(__name__)
 
 class CoreDataset:
     @staticmethod
-    def normalize_dataset():
+    def normalize_dataset() -> None:
         # TODO: Add documentation
 
         source_directory = os.path.join(DATASETS_FOLDER, "train")
@@ -53,7 +53,7 @@ class CoreDataset:
         logger.info("Dataset normalization complete.")
 
     @staticmethod
-    def cloud_load():
+    def cloud_load() -> None:
         if not CLOUD_TYPE:
             raise ValueError(
                 "Cloud service name is not set. Please set a valid cloud "

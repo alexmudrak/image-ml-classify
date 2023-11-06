@@ -47,7 +47,7 @@ class TrainingController:
         self.status = status_name
         self._save_status()
 
-    def _load_status(self):
+    def _load_status(self) -> TrainingStatus:
         # TODO: Move to file utils
         if os.path.exists(self.status_db):
             with open(self.status_db, "rb") as status_file:
@@ -56,12 +56,16 @@ class TrainingController:
         else:
             return TrainingStatus.READY
 
-    def _save_status(self):
+    def _save_status(self) -> None:
         # TODO: Move to file utils
         with open(self.status_db, "wb") as status_file:
             pickle.dump(self.status, status_file)
 
-    def run_train(self, epoch_count: int = 5, hard_run: bool = False) -> None:
+    def run_train(
+        self,
+        epoch_count: int = 5,
+        hard_run: bool = False,
+    ) -> None:
         if (
             self.status
             in [
@@ -70,6 +74,10 @@ class TrainingController:
             ]
             and not hard_run
         ):
+            logger.info(
+                "Training process has been skipped as the model is already "
+                "being trained or dataset synchronization is in progress."
+            )
             return
 
         self._set_status(TrainingStatus.MODEL_TRAINING)
@@ -111,10 +119,10 @@ class TrainingController:
         ready_time = time.time() - base_start_time
         logger.info(f"Ready Time: {ready_time} seconds")
 
-    def _prepeare_transforms(self):
+    def _prepeare_transforms(self) -> None:
         self.transforms = CoreTranform.get_transorms()
 
-    def _prepeare_dataset(self):
+    def _prepeare_dataset(self) -> None:
         logger.info("Preparing dataset...")
         if not self.transforms:
             raise ValueError("Transforms not set. Please set a valid value.")
@@ -169,7 +177,7 @@ class TrainingController:
             )
         logger.info("Finished preparing dataset...")
 
-    def _prepeare_model(self):
+    def _prepeare_model(self) -> None:
         if (
             not self.dataset_loaders
             or not self.dataset_sizes
@@ -203,7 +211,7 @@ class TrainingController:
             self.model_optimizer, step_size=7, gamma=0.1
         )
 
-    def _train_process(self, epoch_count: int):
+    def _train_process(self, epoch_count: int) -> None:
         since = time.time()
         if (
             not self.model
