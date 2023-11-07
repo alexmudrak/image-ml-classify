@@ -48,7 +48,8 @@ class CoreDataset:
 
                 source_dir_path = os.path.join(source_directory, source_dir)
                 files_to_move = os.listdir(source_dir_path)
-
+                # TODO: Need to add behavior if in train folder
+                #       3 or less files.
                 logger.info(
                     "Redistributing 30% of files to the 'val' folder..."
                 )

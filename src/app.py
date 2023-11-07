@@ -29,6 +29,7 @@ def register_endpoints_v1(api: Api) -> None:
     api.add_resource(TrianImageModelAPI, api_v1 + "train")
 
 
+# TODO: move to file utils
 # Function to check and create directories
 def check_and_create_directories(directories):
     for directory in directories:
@@ -39,6 +40,7 @@ def check_and_create_directories(directories):
 
 logger = app_logger(__name__)
 
+# TODO: move to file utils
 directories_to_check = [
     DATASET_FOLDER,
     DATASET_MODEL_PATH,
@@ -50,9 +52,13 @@ check_and_create_directories(directories_to_check)
 
 app = create_app()
 
+# TODO: move to file utils
 if os.path.exists(DATASET_MODEL_STATUS_DB_PATH):
     logger.info(f"Removed old status DB file: {DATASET_MODEL_STATUS_DB_PATH}")
-    os.remove(DATASET_MODEL_STATUS_DB_PATH)
+    try:
+        os.remove(DATASET_MODEL_STATUS_DB_PATH)
+    except FileNotFoundError:
+        pass
 
 
 if __name__ == "__main__":

@@ -110,27 +110,32 @@ class TrainingController:
 
         dataset_sync_time = time.time() - base_start_time
         logger.info(
-            f"Dataset Synchronization Time: {dataset_sync_time} seconds"
+            f"Dataset Synchronization Time: {dataset_sync_time // 60:.0f}m "
+            f"{dataset_sync_time % 60:.0f}s"
         )
 
-        start_time = time.time()
+        if run_as in ["all", "train"]:
+            start_time = time.time()
 
-        self._set_status(TrainingStatus.MODEL_TRAINING)
-        self._train_process(epoch_count)
+            self._set_status(TrainingStatus.MODEL_TRAINING)
+            self._train_process(epoch_count)
 
-        model_training_time = time.time() - start_time
-        logger.info(f"Model Training Time: {model_training_time} seconds")
+            model_training_time = time.time() - start_time
+            logger.info(
+                f"Model Training Time: {model_training_time // 60:.0f}m "
+                f"{model_training_time % 60:.0f}s"
+            )
 
-        start_time = time.time()
-
-        if self.model_object:
-            self.model_object.backup_model()
-            torch.save(self.model, self.model_folder_path)
+            if self.model_object:
+                self.model_object.backup_model()
+                torch.save(self.model, self.model_folder_path)
 
         self._set_status(TrainingStatus.READY)
 
         ready_time = time.time() - base_start_time
-        logger.info(f"Ready Time: {ready_time} seconds")
+        logger.info(
+            f"Ready Time: {ready_time // 60:.0f}m {ready_time % 60:.0f}s"
+        )
 
     def _prepeare_transforms(self) -> None:
         self.transforms = CoreTranform.get_transorms()
