@@ -49,6 +49,7 @@ class TrainingController:
         self.dataset_folder_path = DATASET_FOLDER
         self.transforms = None
         self.cloud_service = CLOUD_TYPE
+        self.dataset_classes_path = DATASET_CLASSES_PATH
 
     def get_status(self) -> TrainingStatus:
         return self.status
@@ -144,14 +145,16 @@ class TrainingController:
         logger.info("Preparing dataset...")
 
         if self.cloud_service and services in ["all", "sync_dataset"]:
-            # Check and download dataset from CLOUD service
             logger.info(
                 "Checking and downloading dataset from the cloud "
                 f"service... {self.cloud_service}"
             )
-            CoreDataset.cloud_load()
-
-        CoreDataset.normalize_dataset()
+            CoreDataset.cloud_load(self.cloud_service)
+        CoreDataset.normalize_dataset(
+            self.dataset_folder_path,
+            DATASET_TRAIN_FOLDER_NAME,
+            DATASET_VALID_FOLDER_NAME,
+        )
 
         self.transforms = CoreTranform.get_transorms()
         if not self.transforms:
@@ -163,6 +166,7 @@ class TrainingController:
             )
             for x in [DATASET_TRAIN_FOLDER_NAME, DATASET_VALID_FOLDER_NAME]
         }
+
         self.dataset_loaders = {
             x: torch.utils.data.DataLoader(
                 image_datasets[x], batch_size=4, shuffle=True, num_workers=4
@@ -186,7 +190,7 @@ class TrainingController:
         )
         store_to_json_file(
             json_classes,
-            DATASET_CLASSES_PATH,
+            self.dataset_classes_path,
         )
         self.dataset_class_size = len(class_names)
 
@@ -242,7 +246,6 @@ class TrainingController:
             or not self.model_optimizer
             or not self.model_object
             or not self.model_criterion
-            or not self.model_optimizer
             or not self.model_scheduler
             or not self.dataset_sizes
         ):
@@ -271,8 +274,7 @@ class TrainingController:
                         self.model.eval()
 
                     running_loss = 0.0
-                    running_corrects = 0
-
+                    running_corrects = torch.tensor(0)
                     for inputs, labels in self.dataset_loaders[phase]:
                         inputs = inputs.to(self.model_object.device)
                         labels = labels.to(self.model_object.device)

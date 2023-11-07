@@ -3,12 +3,7 @@ import random
 import shutil
 
 from core.logger import app_logger
-from core.settings import (
-    CLOUD_TYPE,
-    FILE_COUNTS_TO_VALID,
-    LOCAL_TRAIN_DATASET_PATH,
-    LOCAL_VALID_DATASET_PATH,
-)
+from core.settings import FILE_COUNTS_TO_VALID
 from services.yandex_disk import YandexDisk
 from utils.file_utils import remove_all_folders
 
@@ -17,7 +12,11 @@ logger = app_logger(__name__)
 
 class CoreDataset:
     @staticmethod
-    def normalize_dataset() -> None:
+    def normalize_dataset(
+        dataset_folder_path: str,
+        train_folder_name: str,
+        validate_folder_name: str,
+    ) -> None:
         """
         Normalize the dataset by redistributing images from the 'train' folder
         to the 'val' folder.
@@ -29,10 +28,16 @@ class CoreDataset:
         It achieves this by redistributing a portion (30%) of image from
         'train' to 'val'.
         """
-        remove_all_folders(LOCAL_VALID_DATASET_PATH)
+        source_directory = os.path.join(
+            dataset_folder_path,
+            train_folder_name,
+        )
+        target_directory = os.path.join(
+            dataset_folder_path,
+            validate_folder_name,
+        )
 
-        source_directory = LOCAL_TRAIN_DATASET_PATH
-        target_directory = LOCAL_VALID_DATASET_PATH
+        remove_all_folders(target_directory)
 
         source_dirs = os.listdir(source_directory)
         target_dirs = os.listdir(target_directory)
@@ -83,19 +88,19 @@ class CoreDataset:
         logger.info("Dataset normalization complete.")
 
     @staticmethod
-    def cloud_load() -> None:
-        if not CLOUD_TYPE:
+    def cloud_load(cloud_type: str | None) -> None:
+        if not cloud_type:
             raise ValueError(
                 "Cloud service name is not set. Please set a valid cloud "
                 "service name before proceeding."
             )
 
-        match CLOUD_TYPE.lower():
+        match cloud_type.lower():
             case "yandex":
                 client = YandexDisk()
             case _:
                 raise NotImplementedError(
-                    f"Unknown cloud service name: {CLOUD_TYPE}. "
+                    f"Unknown cloud service name: {cloud_type}. "
                     "Please provide a valid service name."
                 )
         client.sync_data()
