@@ -11,6 +11,8 @@ logger = app_logger(__name__)
 
 
 class CoreDataset:
+    cloud_client = None
+
     @staticmethod
     def normalize_dataset(
         dataset_folder_path: str,
@@ -97,10 +99,10 @@ class CoreDataset:
 
         match cloud_type.lower():
             case "yandex":
-                client = YandexDisk()
+                CoreDataset.cloud_client = YandexDisk()
             case _:
                 raise NotImplementedError(
                     f"Unknown cloud service name: {cloud_type}. "
                     "Please provide a valid service name."
                 )
-        client.sync_data()
+        CoreDataset.cloud_client.sync_data()
