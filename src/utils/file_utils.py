@@ -1,7 +1,9 @@
 import json
 import os
+import pickle
 import shutil
 from datetime import datetime
+from typing import Any
 
 from core.logger import app_logger
 from core.settings import BACKUPS_FOLDER
@@ -24,6 +26,18 @@ def store_to_json_file(data: dict, path: str) -> None:
             ensure_ascii=False,
             indent=4,
         )
+
+
+def get_from_pickle(path: str) -> Any | None:
+    if os.path.exists(path):
+        with open(path, "rb") as file:
+            result = pickle.load(file)
+            return result
+
+
+def store_to_pickle(path: str) -> None:
+    with open(path, "wb") as file:
+        pickle.dump(path, file)
 
 
 def backup_file(file_path: str) -> None:
@@ -61,3 +75,19 @@ def remove_all_folders(base_dir: str) -> None:
                     )
     else:
         logger.info(f"The folder '{base_dir}' does not exist.")
+
+
+def check_and_create_directories(directories: list[str]) -> None:
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+            logger.info(f"Created directory: {directory}")
+
+
+def remove_file(file_path: str):
+    if os.path.exists(file_path):
+        logger.info(f"Removed file: {file_path}")
+        try:
+            os.remove(file_path)
+        except FileNotFoundError:
+            pass

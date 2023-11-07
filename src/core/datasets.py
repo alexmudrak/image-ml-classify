@@ -5,10 +5,12 @@ import shutil
 from core.logger import app_logger
 from core.settings import (
     CLOUD_TYPE,
+    FILE_COUNTS_TO_VALID,
     LOCAL_TRAIN_DATASET_PATH,
     LOCAL_VALID_DATASET_PATH,
 )
 from services.yandex_disk import YandexDisk
+from utils.file_utils import remove_all_folders
 
 logger = app_logger(__name__)
 
@@ -27,6 +29,8 @@ class CoreDataset:
         It achieves this by redistributing a portion (30%) of image from
         'train' to 'val'.
         """
+        remove_all_folders(LOCAL_VALID_DATASET_PATH)
+
         source_directory = LOCAL_TRAIN_DATASET_PATH
         target_directory = LOCAL_VALID_DATASET_PATH
 
@@ -51,21 +55,30 @@ class CoreDataset:
                 # TODO: Need to add behavior if in train folder
                 #       3 or less files.
                 logger.info(
-                    "Redistributing 30% of files to the 'val' folder..."
+                    f"Redistributing {FILE_COUNTS_TO_VALID * 100}% of files "
+                    f"({source_dir}) to the 'val' folder..."
                 )
-                num_files_to_move = int(0.3 * len(files_to_move))
+                num_files_to_move = int(
+                    FILE_COUNTS_TO_VALID * len(files_to_move)
+                )
 
-                files_to_move = random.sample(files_to_move, num_files_to_move)
+                if num_files_to_move > 0:
+                    files_to_move = random.sample(
+                        files_to_move, num_files_to_move
+                    )
 
-                for file_to_move in files_to_move:
-                    logger.debug(f"Moving file: {file_to_move}")
-                    source_file_path = os.path.join(
-                        source_dir_path, file_to_move
-                    )
-                    target_file_path = os.path.join(
-                        target_dir_path, file_to_move
-                    )
-                    shutil.move(source_file_path, target_file_path)
+                    for file_to_move in files_to_move:
+                        logger.debug(f"Moving file: {file_to_move}")
+                        source_file_path = os.path.join(
+                            source_dir_path, file_to_move
+                        )
+                        target_file_path = os.path.join(
+                            target_dir_path, file_to_move
+                        )
+                        shutil.move(source_file_path, target_file_path)
+                else:
+                    shutil.rmtree(source_dir_path)
+                    shutil.rmtree(target_dir_path)
 
         logger.info("Dataset normalization complete.")
 

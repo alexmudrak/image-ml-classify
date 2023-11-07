@@ -42,7 +42,7 @@ class TrianImageModelAPI(Resource):
         run_as = request_json.get("run_as", "all")
 
         self.training_controller.run_train(
-            epoch_count=epoch,
+            epoch_count=int(epoch),
             hard_run=hard_run,
             run_as=run_as,
         )

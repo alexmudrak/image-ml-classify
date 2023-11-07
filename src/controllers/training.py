@@ -2,7 +2,6 @@
 
 import multiprocessing
 import os
-import pickle
 import time
 from tempfile import TemporaryDirectory
 
@@ -23,10 +22,13 @@ from core.settings import (
     DATASET_MODEL_PATH,
     DATASET_TRAIN_FOLDER_NAME,
     DATASET_VALID_FOLDER_NAME,
-    LOCAL_VALID_DATASET_PATH,
 )
 from core.transforms import CoreTranform
-from utils.file_utils import remove_all_folders, store_to_json_file
+from utils.file_utils import (
+    get_from_pickle,
+    store_to_json_file,
+    store_to_pickle,
+)
 
 logger = app_logger(__name__)
 
@@ -56,18 +58,20 @@ class TrainingController:
         self._save_status()
 
     def _load_status(self) -> TrainingStatus:
-        # TODO: Move to file utils
-        if os.path.exists(self.status_db):
-            with open(self.status_db, "rb") as status_file:
-                status = pickle.load(status_file)
-                return status
+        status = get_from_pickle(self.status_db)
+
+        if status:
+            return status
         else:
             return TrainingStatus.READY
 
     def _save_status(self) -> None:
-        # TODO: Move to file utils
-        with open(self.status_db, "wb") as status_file:
-            pickle.dump(self.status, status_file)
+        try:
+            store_to_pickle(self.status_db)
+        except IOError:
+            error_message = f"Failed to save status data - {self.status_db}"
+            logger.critical(error_message)
+            raise IOError(error_message)
 
     def run_train(
         self,
@@ -104,7 +108,6 @@ class TrainingController:
         base_start_time = time.time()
 
         self._set_status(TrainingStatus.DATASET_SYNCHRONIZATION)
-        self._prepeare_transforms()
         self._prepeare_dataset(run_as)
         self._prepeare_model()
 
@@ -137,15 +140,8 @@ class TrainingController:
             f"Ready Time: {ready_time // 60:.0f}m {ready_time % 60:.0f}s"
         )
 
-    def _prepeare_transforms(self) -> None:
-        self.transforms = CoreTranform.get_transorms()
-
     def _prepeare_dataset(self, services: str = "all") -> None:
         logger.info("Preparing dataset...")
-        if not self.transforms:
-            raise ValueError("Transforms not set. Please set a valid value.")
-
-        remove_all_folders(LOCAL_VALID_DATASET_PATH)
 
         if self.cloud_service and services in ["all", "sync_dataset"]:
             # Check and download dataset from CLOUD service
@@ -156,6 +152,10 @@ class TrainingController:
             CoreDataset.cloud_load()
 
         CoreDataset.normalize_dataset()
+
+        self.transforms = CoreTranform.get_transorms()
+        if not self.transforms:
+            raise ValueError("Transforms not set. Please set a valid value.")
 
         image_datasets = {
             x: datasets.ImageFolder(
