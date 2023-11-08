@@ -6,10 +6,6 @@ COPY requirements.txt /app/
 RUN ls -la /app/
 RUN pip install -r /app/requirements.txt
 
-RUN mkdir /app/datasets/
-RUN mkdir /app/datasets/train/
-RUN mkdir /app/datasets/val/
-
 COPY ./src/ /app/
 
 CMD ["gunicorn", "-b 0.0.0.0:6767", "-w 2", "--threads=2", "app:app"]

@@ -9,7 +9,11 @@ services:
     ports:
       - "6767:6767"
     volumes:
-      - ./datasets:/app/datasets
-      - ./datamodels:/app/datamodels
       - ./backups:/app/backups
+      - ./datasets:/app/datasets
+      - ./dataset_models:/app/dataset_models
+    environment:
+      - BACKUPS_FOLDER=./backups/
+      - DATASET_FOLDER=./datasets/
+      - DATASET_MODEL_FOLDER=./dataset_models/
     env_file: .env
