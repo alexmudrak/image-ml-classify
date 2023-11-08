@@ -6,8 +6,8 @@ from core.logger import app_logger
 from core.settings import (
     BACKUPS_FOLDER,
     DATASET_FOLDER,
-    DATASET_MODEL_PATH,
     DATASET_MODEL_STATUS_DB_PATH,
+    DATASET_MODEL_FOLDER,
     DEBUG,
     LOCAL_TRAIN_DATASET_PATH,
     LOCAL_VALID_DATASET_PATH,
@@ -16,7 +16,7 @@ from utils.file_utils import check_and_create_directories, remove_file
 
 directories_to_check = [
     DATASET_FOLDER,
-    DATASET_MODEL_PATH,
+    DATASET_MODEL_FOLDER,
     LOCAL_TRAIN_DATASET_PATH,
     LOCAL_VALID_DATASET_PATH,
     BACKUPS_FOLDER,
