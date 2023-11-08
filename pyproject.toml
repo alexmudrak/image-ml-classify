@@ -26,6 +26,11 @@ init = "pre-commit install"
 dev_server = "python src/app.py"
 server = "gunicorn -w 4 -b 0.0.0.0:6767 src.app:app"
 
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-cov>=4.1.0",
+]
 [tool.black]
 line-length = 79
 
@@ -37,3 +42,29 @@ profile = "black"
 line-length = 79
 fixable = ["ALL"]
 unfixable = []
+
+[tool.coverage.report]
+exclude_lines= ["pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "raise Exception",
+    "if __name__ == .__main__.:"]
+
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/migrations/*",
+    ]
+
+[tool.coverage.run]
+source = ["src"]
+
+omit = [
+    "*/.virtualenvs/*",
+    "*/virtualenvs/*",
+    "*/tests/*",
+    "*/.local/*",
+    "*/__init__.py",
+    "*/migrations/*",
+    ]

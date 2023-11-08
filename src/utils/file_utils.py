@@ -10,6 +10,8 @@ from core.settings import BACKUPS_FOLDER
 
 logger = app_logger(__name__)
 
+AAA = "NOT"
+
 
 def get_from_json_file(path: str) -> dict:
     logger.info(f"Trying get json data from {path}")
@@ -35,9 +37,9 @@ def get_from_pickle(path: str) -> Any | None:
             return result
 
 
-def store_to_pickle(path: str) -> None:
+def store_to_pickle(obj: Any, path: str) -> None:
     with open(path, "wb") as file:
-        pickle.dump(path, file)
+        pickle.dump(obj, file)
 
 
 def backup_file(file_path: str) -> None:
@@ -90,4 +92,4 @@ def remove_file(file_path: str):
         try:
             os.remove(file_path)
         except FileNotFoundError:
-            pass
+            logger.error(f"The file '{file_path}' does not exist.")
