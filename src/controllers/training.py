@@ -68,7 +68,7 @@ class TrainingController:
 
     def _save_status(self) -> None:
         try:
-            store_to_pickle(self.status_db)
+            store_to_pickle(self.status, self.status_db)
         except IOError:
             error_message = f"Failed to save status data - {self.status_db}"
             logger.critical(error_message)
