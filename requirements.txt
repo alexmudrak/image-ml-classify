@@ -17,7 +17,7 @@ flask==3.0.2
 flask-restful==0.3.10
 frozenlist==1.4.1
 fsspec==2024.2.0
-gunicorn==21.2.0
+gunicorn==22.0.0
 idna==3.6
 iniconfig==2.0.0
 itsdangerous==2.1.2
