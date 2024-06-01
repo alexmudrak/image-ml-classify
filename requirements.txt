@@ -50,6 +50,6 @@ torch==2.2.2
 torchvision==0.17.2
 triton==2.2.0; platform_system == "Linux" and platform_machine == "x86_64" and python_version < "3.12"
 typing-extensions==4.9.0
-werkzeug==3.0.1
+werkzeug==3.0.3
 yadisk-async==1.4.5
 yarl==1.9.4
